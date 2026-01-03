@@ -59,7 +59,7 @@ fn main() -> ! {
         .text_color(BinaryColor::On)
         .build();
 
-    Text::with_baseline("Hello Ada!", Point::new(0, 0), style, Baseline::Top)
+    Text::with_baseline("Hello Wazzup!", Point::new(0, 0), style, Baseline::Top)
         .draw(&mut display)
         .unwrap();
 
