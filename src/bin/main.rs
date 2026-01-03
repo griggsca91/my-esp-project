@@ -6,11 +6,15 @@
     holding buffers for the duration of a data transfer."
 )]
 
+use esp_hal::gpio::{Io, Level, Output, OutputConfig};
 use esp_hal::main;
+use esp_hal::time::{Duration, Instant};
 use esp_hal::{
     clock::CpuClock,
     i2c::master::{Config as I2cConfig, I2c},
     time::Rate,
+        delay::Delay,
+
 };
 
 use embedded_graphics::{
@@ -21,6 +25,7 @@ use embedded_graphics::{
 };
 
 use ssd1306::{prelude::*, I2CDisplayInterface, Ssd1306};
+use uln2003::{StepperMotor, ULN2003};
 
 
 #[panic_handler]
@@ -34,6 +39,35 @@ esp_bootloader_esp_idf::esp_app_desc!();
 
 #[main]
 fn main() -> ! {
+    // generator version: 1.0.1
+
+    let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
+    let peripherals = esp_hal::init(config);
+
+    let delay = Delay::new();
+
+    let mut motor = ULN2003::new(
+        Output::new(peripherals.GPIO19, Level::Low, OutputConfig::default()),
+        Output::new(peripherals.GPIO18, Level::Low, OutputConfig::default()),   
+        Output::new(peripherals.GPIO5, Level::Low, OutputConfig::default()),
+        Output::new(peripherals.GPIO23, Level::Low, OutputConfig::default()),   
+        Some(delay)
+    );
+    
+    loop {
+        motor.step().unwrap();
+        blocking_delay(Duration::from_millis(1));
+    }
+
+    // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.0.0/examples/src/bin
+}
+
+fn blocking_delay(duration: Duration) {
+    let delay_start = Instant::now();
+    while delay_start.elapsed() < duration {}
+}
+
+fn screen_main() -> ! {
     // generator version: 1.0.1
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
